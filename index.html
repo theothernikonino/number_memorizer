@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Number Drill</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Number Drill">
+<meta name="theme-color" content="#1f6f5c">
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--ink:#1d1d1b;--mute:#6b6a64;--line:#dedbd2;--accent:#1f6f5c;--accent-ink:#fff;--ok:#1f7a45;--okbg:#e3f3e8;--bad:#b3261e;--badbg:#fbe5e3}
+@media(prefers-color-scheme:dark){:root{--bg:#161614;--card:#21211e;--ink:#f0eee8;--mute:#9a988f;--line:#38372f;--accent:#4fb89d;--accent-ink:#0d1f1a;--ok:#6fd195;--okbg:#17301f;--bad:#f2867f;--badbg:#35201e}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#app{max-width:560px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 32px)}
+h1{font-size:22px;margin:4px 0 2px}
+.sub{color:var(--mute);margin:0 0 16px;font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+label.f{display:block;font-size:13px;color:var(--mute);margin:0 0 4px}
+input[type=text],input[type=tel],textarea{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px}
+textarea{min-height:96px;resize:vertical}
+input:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+button{font:inherit;font-size:16px;font-weight:600;border:0;border-radius:12px;padding:14px;background:var(--accent);color:var(--accent-ink);cursor:pointer;width:100%}
+button.sec{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+button.ghost{background:transparent;color:var(--mute);font-weight:500;padding:8px;width:auto}
+button.sm{padding:8px 12px;font-size:14px;width:auto;border-radius:9px}
+button:disabled{opacity:.4;cursor:default}
+.gap{margin-top:10px}
+.item{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item .t{flex:1;min-width:0}
+.item .l{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .n{color:var(--mute);font:14px ui-monospace,Menlo,Consolas,monospace}
+.dots{display:flex;gap:3px}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--accent)}
+details summary{cursor:pointer;font-weight:600;padding:2px 0}
+.big{font:600 34px/1.2 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.04em;word-break:break-word}
+.lab{font-size:26px;font-weight:700;line-height:1.2}
+.face{min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;cursor:pointer;user-select:none}
+.hint{color:var(--mute);font-size:14px}
+.prog{display:flex;justify-content:space-between;color:var(--mute);font-size:14px;margin-bottom:8px}
+.slots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;margin:14px 0}
+.slots .d,.slots .s{font:600 28px ui-monospace,Menlo,Consolas,monospace;min-width:.7em;text-align:center}
+.slots .s{color:var(--mute);min-width:.4em}
+input.slot{width:40px;height:50px;padding:0;text-align:center;font:600 26px ui-monospace,Menlo,Consolas,monospace;border:2px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink)}
+input.slot.ok{border-color:var(--ok);background:var(--okbg)}
+input.slot.bad{border-color:var(--bad);background:var(--badbg)}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border-radius:0;background:var(--card);color:var(--mute);padding:9px;font-size:14px;font-weight:600}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+.res{font-weight:700;text-align:center;margin:6px 0}
+.res.ok{color:var(--ok)}.res.bad{color:var(--bad)}
+.stat{font-size:40px;font-weight:700;text-align:center}
+.center{text-align:center}
+.note{color:var(--mute);font-size:13px;margin:8px 0 0}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function(){
+var KEY='numdrill.v1';
+var $=function(s){return document.querySelector(s)};
+var esc=function(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+function load(){try{var v=JSON.parse(localStorage.getItem(KEY));return Array.isArray(v)?v:[]}catch(e){return []}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(cards))}catch(e){}}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function order(){return cards.map(function(c){return {id:c.id,r:(c.streak||0)+Math.random()}}).sort(function(a,b){return a.r-b.r}).map(function(x){return x.id})}
+function byId(id){for(var i=0;i<cards.length;i++)if(cards[i].id===id)return cards[i];return null}
+function fmt(raw){
+  var t=raw.trim(),d=t.replace(/\D/g,'');
+  if(/^\d+$/.test(t)){
+    if(d.length===10)return d.replace(/(\d{3})(\d{3})(\d{4})/,'$1-$2-$3');
+    if(d.length===7)return d.replace(/(\d{3})(\d{4})/,'$1-$2');
+    if(d.length===11&&d[0]==='1')return d.replace(/(\d)(\d{3})(\d{3})(\d{4})/,'$1-$2-$3-$4');
+    return d.replace(/(\d{4})(?=\d)/g,'$1 ');
+  }
+  return t.replace(/\s+/g,' ');
+}
+function addCard(label,num){
+  if(num.replace(/\D/g,'').length<2)return false;
+  cards.push({id:uid(),label:(label||'').trim()||('Number '+(cards.length+1)),num:fmt(num),streak:0});
+  return true;
+}
+function parseBulk(text){
+  var n=0;
+  text.split(/\r?\n/).forEach(function(line){
+    line=line.trim();if(!line)return;
+    var i=line.lastIndexOf(':'),label='',num=line;
+    if(i>-1){label=line.slice(0,i);num=line.slice(i+1)}
+    if(addCard(label,num))n++;
+  });
+  return n;
+}
+function exportText(){return cards.map(function(c){return c.label+': '+c.num}).join('\n')}
+
+var cards=load(),view='home',S={lvl:2,rev:false},msg='',confirmId=null;
+
+function dots(c){var s=Math.min(c.streak||0,3),h='';for(var i=0;i<3;i++)h+='<i class="'+(i<s?'on':'')+'"></i>';return '<span class="dots" title="Known after 3 right in a row">'+h+'</span>'}
+
+function renderHome(){
+  var list=cards.length?cards.map(function(c){
+    return '<div class="item"><div class="t"><div class="l">'+esc(c.label)+'</div><div class="n">'+esc(c.num)+'</div></div>'+dots(c)+
+    (confirmId===c.id?'<button class="sm" style="background:var(--bad);color:#fff" data-act="del" data-id="'+c.id+'">Delete?</button>':'<button class="ghost" data-act="askdel" data-id="'+c.id+'" aria-label="Delete">✕</button>')+'</div>';
+  }).join(''):'<p class="hint" style="margin:0">No numbers yet. Add one above.</p>';
+  return '<h1>Number Drill</h1><p class="sub">Numbers stay on this device. Nothing is sent anywhere.</p>'+
+  '<div class="card"><label class="f" for="lab">Name</label><input type="text" id="lab" placeholder="e.g. Mom" autocomplete="off">'+
+  '<label class="f gap" for="num">Number</label><input type="tel" id="num" placeholder="512-555-0142" autocomplete="off">'+
+  '<button class="gap" data-act="add">Add number</button>'+
+  (msg?'<p class="note">'+esc(msg)+'</p>':'')+
+  '<details class="gap"><summary>Add several at once</summary><p class="note">One per line, as <b>Name: number</b></p><textarea id="bulk" placeholder="Mom: 512-555-0142&#10;Home: 555-0199"></textarea><button class="sec gap" data-act="bulk">Add all</button></details></div>'+
+  '<div class="row"><button data-act="flash"'+(cards.length?'':' disabled')+'>Flashcards</button><button data-act="fill"'+(cards.length?'':' disabled')+'>Fill the blanks</button></div>'+
+  '<div class="card gap"><div class="prog"><span>Your numbers ('+cards.length+')</span><span>Dots: 3 right in a row = known</span></div>'+list+'</div>'+
+  '<div class="card"><details><summary>Backup</summary><p class="note">Copy this text and keep it somewhere safe (or on paper). Paste it into "Add several at once" to restore.</p><textarea id="exp" readonly>'+esc(exportText())+'</textarea><button class="sec gap" data-act="copy">Copy</button></details></div>';
+}
+
+function renderDone(title){
+  return '<h1>'+title+'</h1><div class="card gap"><div class="stat">'+S.got+' / '+(S.got+S.miss)+'</div><p class="center hint">right on the first try'+(S.miss?', '+S.miss+' to review':'')+'</p></div>'+
+  '<div class="row"><button data-act="'+view+'">Go again</button><button class="sec" data-act="home">Done</button></div>';
+}
+
+function renderFlash(){
+  if(S.i>=S.q.length)return renderDone('Flashcards done');
+  var c=byId(S.q[S.i]);if(!c){S.i++;return renderFlash()}
+  var front=S.rev?'<div class="big">'+esc(c.num)+'</div>':'<div class="lab">'+esc(c.label)+'</div>';
+  var back=S.rev?'<div class="lab">'+esc(c.label)+'</div>':'<div class="big">'+esc(c.num)+'</div>';
+  return '<div class="row" style="align-items:center"><button class="ghost" data-act="home" style="text-align:left">← Back</button><div class="seg" style="flex:0 0 auto"><button class="'+(S.rev?'':'on')+'" data-act="rev0">Name → #</button><button class="'+(S.rev?'on':'')+'" data-act="rev1"># → Name</button></div></div>'+
+  '<div class="prog gap"><span>Card '+(S.i+1)+' of '+S.q.length+'</span><span>'+dots(c)+'</span></div>'+
+  '<div class="card face" data-act="reveal">'+(S.show?front+'<div class="hint">↓</div>'+back:front+'<div class="hint">Say it, then tap to check</div>')+'</div>'+
+  (S.show?'<div class="row"><button class="sec" data-act="miss">Missed it</button><button data-act="got">Got it</button></div>':'<button data-act="reveal">Reveal</button>');
+}
+
+function mkItem(c){
+  var n=c.num,di=[];
+  for(var k=0;k<n.length;k++)if(/\d/.test(n[k]))di.push(k);
+  var frac=[0.35,0.65,1][S.lvl-1];
+  var cnt=Math.max(1,Math.round(di.length*frac));
+  var pick=shuffle(di.slice()).slice(0,cnt),blank={};
+  pick.forEach(function(k){blank[k]=1});
+  return {id:c.id,blank:blank};
+}
+function renderFill(){
+  if(S.i>=S.q.length)return renderDone('Fill the blanks done');
+  var c=byId(S.q[S.i]);if(!c){S.i++;return renderFill()}
+  if(!S.item||S.item.id!==c.id)S.item=mkItem(c);
+  var h='';
+  for(var k=0;k<c.num.length;k++){
+    var ch=c.num[k];
+    if(S.item.blank[k])h+='<input class="slot" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" data-k="'+k+'"'+(S.checked?' disabled':'')+'>';
+    else if(/\d/.test(ch))h+='<span class="d">'+ch+'</span>';
+    else h+='<span class="s">'+esc(ch)+'</span>';
+  }
+  return '<div class="row" style="align-items:center"><button class="ghost" data-act="home" style="text-align:left">← Back</button><div class="seg" style="flex:0 0 auto"><button class="'+(S.lvl===1?'on':'')+'" data-act="lvl1">Easy</button><button class="'+(S.lvl===2?'on':'')+'" data-act="lvl2">Medium</button><button class="'+(S.lvl===3?'on':'')+'" data-act="lvl3">Hard</button></div></div>'+
+  '<div class="prog gap"><span>Card '+(S.i+1)+' of '+S.q.length+'</span><span>'+dots(c)+'</span></div>'+
+  '<div class="card center"><div class="lab">'+esc(c.label)+'</div><div class="slots" id="slots">'+h+'</div>'+
+  '<div id="result"></div></div>'+
+  (S.checked?'<button data-act="next">Next</button>':'<button data-act="check">Check</button>');
+}
+
+function render(){
+  var a=$('#app');
+  a.innerHTML=view==='home'?renderHome():view==='flash'?renderFlash():renderFill();
+  if(view==='fill'&&!S.checked&&S.i<S.q.length){var f=a.querySelector('input.slot');if(f)f.focus()}
+}
+
+function startSession(kind){
+  S.q=order();S.i=0;S.got=0;S.miss=0;S.show=false;S.checked=false;S.item=null;view=kind;render();
+}
+function grade(ok){
+  var c=byId(S.q[S.i]);
+  if(c){c.streak=ok?(c.streak||0)+1:0;save()}
+  if(ok){if(!S.retry||!S.retry[c.id])S.got++}else{S.miss++;S.retry=S.retry||{};S.retry[c.id]=1;S.q.push(c.id)}
+}
+function check(){
+  var c=byId(S.q[S.i]),all=true;
+  document.querySelectorAll('input.slot').forEach(function(inp){
+    var ok=inp.value===c.num[+inp.dataset.k];
+    if(!ok){all=false;inp.value=c.num[+inp.dataset.k]}
+    inp.classList.add(ok?'ok':'bad');inp.disabled=true;
+  });
+  S.checked=true;
+  grade(all);
+  $('#result').innerHTML=all?'<div class="res ok">Correct</div>':'<div class="res bad">Not quite. Correct digits shown in red.</div>';
+  var b=document.querySelector('[data-act="check"]');
+  if(b){b.dataset.act='next';b.textContent='Next'}
+}
+function next(){S.i++;S.checked=false;S.item=null;S.show=false;render()}
+
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-act]');if(!t)return;
+  var act=t.dataset.act;
+  if(act==='add'){
+    var ok=addCard($('#lab').value,$('#num').value);
+    msg=ok?'Added.':'Enter a number with at least 2 digits.';
+    if(ok)save();render();
+    if(ok){$('#lab').focus()}
+  }else if(act==='bulk'){
+    var n=parseBulk($('#bulk').value);msg=n?('Added '+n+'.'):'Nothing added. Use "Name: number" on each line.';
+    if(n)save();render();
+  }else if(act==='askdel'){confirmId=t.dataset.id;render()}
+  else if(act==='del'){cards=cards.filter(function(c){return c.id!==t.dataset.id});confirmId=null;save();render()}
+  else if(act==='copy'){
+    var ta=$('#exp');ta.focus();ta.select();
+    var done=function(){t.textContent='Copied'};
+    try{navigator.clipboard.writeText(ta.value).then(done,function(){try{document.execCommand('copy');done()}catch(x){}})}catch(x){try{document.execCommand('copy');done()}catch(y){}}
+  }
+  else if(act==='home'){view='home';msg='';confirmId=null;render()}
+  else if(act==='flash'){startSession('flash')}
+  else if(act==='fill'){startSession('fill')}
+  else if(act==='reveal'){S.show=true;render()}
+  else if(act==='got'){grade(true);S.i++;S.show=false;render()}
+  else if(act==='miss'){grade(false);S.i++;S.show=false;render()}
+  else if(act==='rev0'){S.rev=false;S.show=false;render()}
+  else if(act==='rev1'){S.rev=true;S.show=false;render()}
+  else if(act==='check'){check()}
+  else if(act==='next'){next()}
+  else if(/^lvl[123]$/.test(act)){S.lvl=+act.slice(3);S.item=null;S.checked=false;render()}
+});
+
+document.addEventListener('input',function(e){
+  var t=e.target;if(!t.classList||!t.classList.contains('slot'))return;
+  t.value=t.value.replace(/\D/g,'').slice(-1);
+  if(t.value){var all=[].slice.call(document.querySelectorAll('input.slot'));var i=all.indexOf(t);if(all[i+1])all[i+1].focus()}
+});
+document.addEventListener('keydown',function(e){
+  var t=e.target;
+  if(e.key==='Backspace'&&t.classList&&t.classList.contains('slot')&&!t.value){
+    var all=[].slice.call(document.querySelectorAll('input.slot'));var i=all.indexOf(t);if(all[i-1]){all[i-1].focus();all[i-1].value=''}
+  }
+  if(e.key==='Enter'&&view==='fill'){
+    var b=document.querySelector('[data-act="check"],[data-act="next"]');if(b)b.click();
+  }
+});
+
+render();
+if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){})}
+})();
+</script>
+</body>
+</html>
